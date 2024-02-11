@@ -1,20 +1,20 @@
 # queryings-api
 
-### REST
+## REST
 
-Base URL: http://localhost:8080
-Endpoint: /api/query
-Query param: q=<keyword>
+- Base URL: http://localhost:8080
+- Endpoint: `/api/query`
+- Query param: `q=<keyword>`
 
 ```
 http://localhost:8080/api/query?q=cat
 ```
 
-### GraphQL
+## GraphQL
 
-**Same as above but allow specific field picking**
+*Same as above but allow specific fields picking*
 
-Query
+### Query
 
 Base URL: http://localhost:8080/graphql
 
@@ -87,7 +87,7 @@ query getSuggestions($query: String!) {
 }
 ```
 
-Variables
+### Variables
 
 ```graphql
 {
