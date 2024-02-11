@@ -8,7 +8,7 @@ const {
   prepositions,
   comparisons,
 } = require("./function");
-const port = 8080;
+const port = process.env.PORT || 8080;
 
 async function startApolloServer(typeDefs, resolvers) {
   const app = express();
@@ -63,7 +63,10 @@ async function startApolloServer(typeDefs, resolvers) {
   });
 
   app.listen(port, () => {
-    console.log(`App listening at http://localhost:${port}`);
+    console.log(`⭐ Server listening at http://localhost:${port}`);
+    console.log(
+      `🚀 GraphQL server ready at http://localhost:${port}${server.graphqlPath}`
+    );
   });
 }
 
