@@ -3,7 +3,7 @@ const {
   questions,
   prepositions,
   comparisons,
-} = require("../function");
+} = require("../services");
 
 const resolvers = {
   Query: {

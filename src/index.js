@@ -1,66 +1,27 @@
 const express = require("express");
 const { ApolloServer } = require("apollo-server-express");
+const { default: slowDown } = require("express-slow-down");
 const typeDefs = require("./graphql/schema");
 const resolvers = require("./graphql/resolvers");
-const {
-  fetchSuggestions,
-  questions,
-  prepositions,
-  comparisons,
-} = require("./function");
-const port = process.env.PORT || 8080;
+const router = require("./routes/route");
 
 async function startApolloServer(typeDefs, resolvers) {
   const app = express();
   const server = new ApolloServer({ typeDefs, resolvers });
+  const port = process.env.PORT || 8080;
 
   await server.start();
   server.applyMiddleware({ app });
 
-  app.use(express.json()); // Middleware to parse JSON bodies
-
-  app.get("/api/query", async (req, res) => {
-    let query = req.query.q;
-
-    const results = {
-      name: query,
-      children: {
-        questions: {},
-        prepositions: {},
-        comparisons: {},
-        alphabeticals: {},
-      },
-    };
-
-    if (query) {
-      await Promise.all([
-        ...questions.map((question) =>
-          fetchSuggestions(query, question + " ").then((data) => {
-            results.children.questions[question] = data;
-          })
-        ),
-        ...prepositions.map((preposition) =>
-          fetchSuggestions(query + " " + preposition).then((data) => {
-            results.children.prepositions[preposition] = data;
-          })
-        ),
-        ...comparisons.map((comparison) =>
-          fetchSuggestions(query + " " + comparison).then((data) => {
-            results.children.comparisons[comparison] = data;
-          })
-        ),
-        ..."abcdefghijklmnopqrstuvwxyz*".split("").map((letter) =>
-          fetchSuggestions(query + " " + letter).then((data) => {
-            results.children.alphabeticals[letter] = data;
-          })
-        ),
-      ]);
-
-      res.json(results);
-    } else {
-      res.status(400).json({ error: "Missing query parameter" });
-    }
+  const limitMiddleware = slowDown({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    delayAfter: 3, // 3 requests per 15 minutes
+    delayMs: (hits) => hits * hits * 1000, // begin adding 1000ms of delay per request: (ie. 4 * 4 * 1000 = 16000ms) (16 seconds)
   });
+
+  app.use(limitMiddleware);
+  app.use(express.json()); // Middleware to parse JSON bodies
+  app.use("/api", router);
 
   app.listen(port, () => {
     console.log(`⭐ Server listening at http://localhost:${port}`);
