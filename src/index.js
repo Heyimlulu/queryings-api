@@ -1,6 +1,7 @@
 const express = require("express");
 const { ApolloServer } = require("apollo-server-express");
-const { default: slowDown } = require("express-slow-down");
+const { default: rateLimit } = require("express-rate-limit");
+const requestIp = require("request-ip");
 const typeDefs = require("./graphql/schema");
 const resolvers = require("./graphql/resolvers");
 const router = require("./routes/route");
@@ -13,12 +14,28 @@ async function startApolloServer(typeDefs, resolvers) {
   await server.start();
   server.applyMiddleware({ app });
 
-  const limitMiddleware = slowDown({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    delayAfter: 3, // 3 requests per 15 minutes
-    delayMs: (hits) => hits * hits * 1000, // begin adding 1000ms of delay per request: (ie. 4 * 4 * 1000 = 16000ms) (16 seconds)
+  const limitMiddleware = rateLimit({
+    windowMs: 30 * 60 * 1000, // 30 minutes
+    max: 3,
+    message: (req, res) => {
+      return res.json({
+        status: 429,
+        message: "Too many requests, please try again later.",
+      });
+    },
+    keyGenerator: function (req) {
+      return req.clientIp;
+    },
+    skip: (req) => {
+      const { clientIp, path } = req;
+      if (clientIp === "::1" || path === "/api/ping") {
+        return true;
+      }
+      return false;
+    },
   });
 
+  app.use(requestIp.mw());
   app.use(limitMiddleware);
   app.use(express.json()); // Middleware to parse JSON bodies
   app.use("/api", router);

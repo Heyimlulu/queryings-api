@@ -8,6 +8,10 @@ const {
 
 const router = Router();
 
+router.get("/ping", (req, res) => {
+  res.json({ message: "Server is up and running!" });
+});
+
 router.get("/get-queries", async (req, res) => {
   let query = req.query.q;
 
