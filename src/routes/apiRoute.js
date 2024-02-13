@@ -5,14 +5,24 @@ const {
   prepositions,
   comparisons,
 } = require("../services");
+const { authenticateToken } = require("../security");
 
-const router = Router();
+const apiRoute = Router();
 
-router.get("/ping", (req, res) => {
+apiRoute.get("/ping", (req, res) => {
   res.json({ message: "Server is up and running!" });
 });
 
-router.get("/get-queries", async (req, res) => {
+apiRoute.get("/get-queries", async (req, res, next) => {
+  // authenticateToken(req, res, next);
+
+  if (
+    !req.headers["x-client-app"] ||
+    req.headers["x-client-app"] !== "queryings-app"
+  ) {
+    return res.status(400).json({ message: "Missing header" });
+  }
+
   let query = req.query.q;
 
   const results = {
@@ -51,8 +61,8 @@ router.get("/get-queries", async (req, res) => {
 
     res.json(results);
   } else {
-    res.status(400).json({ error: "Missing query parameter" });
+    res.status(400).json({ message: "Missing query parameter" });
   }
 });
 
-module.exports = router;
+module.exports = apiRoute;
