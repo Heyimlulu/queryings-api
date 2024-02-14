@@ -5,7 +5,6 @@ const {
   prepositions,
   comparisons,
 } = require("../services");
-const { authenticateToken } = require("../security");
 
 const apiRoute = Router();
 
@@ -14,15 +13,6 @@ apiRoute.get("/ping", (req, res) => {
 });
 
 apiRoute.get("/get-queries", async (req, res, next) => {
-  // authenticateToken(req, res, next);
-
-  if (
-    !req.headers["x-client-app"] ||
-    req.headers["x-client-app"] !== "queryings-app"
-  ) {
-    return res.status(400).json({ message: "Missing header" });
-  }
-
   let query = req.query.q;
 
   const results = {
