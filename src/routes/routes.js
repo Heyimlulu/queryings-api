@@ -6,13 +6,13 @@ const {
   comparisons,
 } = require("../services");
 
-const router = Router();
+const apiRoute = Router();
 
-router.get("/ping", (req, res) => {
+apiRoute.get("/ping", (req, res) => {
   res.json({ message: "Server is up and running!" });
 });
 
-router.get("/get-queries", async (req, res) => {
+apiRoute.get("/get-queries", async (req, res, next) => {
   let query = req.query.q;
 
   const results = {
@@ -51,8 +51,8 @@ router.get("/get-queries", async (req, res) => {
 
     res.json(results);
   } else {
-    res.status(400).json({ error: "Missing query parameter" });
+    res.status(400).json({ message: "Missing query parameter" });
   }
 });
 
-module.exports = router;
+module.exports = apiRoute;

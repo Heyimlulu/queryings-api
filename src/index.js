@@ -2,9 +2,10 @@ const express = require("express");
 const { ApolloServer } = require("apollo-server-express");
 const { default: rateLimit } = require("express-rate-limit");
 const requestIp = require("request-ip");
+const cors = require("cors");
 const typeDefs = require("./graphql/schema");
 const resolvers = require("./graphql/resolvers");
-const router = require("./routes/route");
+const routes = require("./routes/routes");
 
 async function startApolloServer(typeDefs, resolvers) {
   const app = express();
@@ -27,18 +28,39 @@ async function startApolloServer(typeDefs, resolvers) {
       return req.clientIp;
     },
     skip: (req) => {
-      const { clientIp, path } = req;
-      if (clientIp === "::1" || path === "/api/ping") {
+      const { path, headers } = req;
+      if (
+        path === "/api/ping" ||
+        headers["x-client-referer"] === "queryings-app"
+      ) {
         return true;
       }
       return false;
     },
   });
 
+  if (process.env.NODE_ENV === "development") {
+    app.use(cors());
+  }
+  app.use((req, res, next) => {
+    // set the CORS policy
+    res.header("Access-Control-Allow-Origin", "*");
+    // set the CORS headers
+    res.header(
+      "Access-Control-Allow-Headers",
+      "origin, X-Requested-With,Content-Type,Accept, Authorization"
+    );
+    // set the CORS method headers
+    if (req.method === "OPTIONS") {
+      res.header("Access-Control-Allow-Methods", "POST,GET");
+      return res.status(200).json({});
+    }
+    next();
+  });
   app.use(requestIp.mw());
   app.use(limitMiddleware);
   app.use(express.json()); // Middleware to parse JSON bodies
-  app.use("/api", router);
+  app.use("/api", routes);
 
   app.listen(port, () => {
     console.log(`⭐ Server listening at http://localhost:${port}`);
