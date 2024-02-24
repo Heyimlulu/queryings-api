@@ -16,24 +16,9 @@ const startApolloServer = async () => {
   await server.start();
 
   app.use(cors());
-  app.use((req, res, next) => {
-    // set the CORS policy
-    res.header("Access-Control-Allow-Origin", "*");
-    // set the CORS headers
-    res.header(
-      "Access-Control-Allow-Headers",
-      "origin, X-Requested-With,Content-Type,Accept, Authorization"
-    );
-    // set the CORS method headers
-    if (req.method === "OPTIONS") {
-      res.header("Access-Control-Allow-Methods", "POST,GET");
-      return res.status(200).json({});
-    }
-    next();
-  });
-  app.use(express.json()); // Middleware to parse JSON bodies
-
+  app.use(express.json());
   app.use("/api", routes);
+
   app.use(
     "/graphql",
     cors<cors.CorsRequest>(),
