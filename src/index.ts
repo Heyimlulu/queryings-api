@@ -5,10 +5,7 @@ import cors from "cors";
 import typeDefs from "./graphql/schema";
 import resolvers from "./graphql/resolvers";
 import routes from "./routes/routes";
-
-export interface SharedContext {
-  client?: string;
-}
+import { SharedContext } from "./context";
 
 const startApolloServer = async () => {
   const app = express();

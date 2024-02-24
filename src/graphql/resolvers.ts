@@ -5,9 +5,9 @@ import {
   prepositions,
   comparisons,
 } from "../services";
-import { SharedContext } from "..";
+import { SharedContext } from "../context";
 
-const getSuggestions = async (query: string, context: SharedContext) => {
+const getSuggestions = (query: string, context: SharedContext) => {
   if (!query) throw new GraphQLError("Missing query parameter");
   if (query.length < 3)
     throw new GraphQLError(
@@ -53,7 +53,7 @@ const fetchChildrenCategories = async (
 
 const resolvers = {
   Query: {
-    suggestions: async (
+    suggestions: (
       _: any,
       { query }: { query: string },
       context: SharedContext
@@ -64,17 +64,17 @@ const resolvers = {
     children: (parent: any) => parent,
   },
   Children: {
-    questions: async (parent: any) =>
+    questions: (parent: any) =>
       fetchChildrenCategories(
         parent.children.questions,
         parent.name,
         "questions"
       ),
-    prepositions: async (parent: any) =>
+    prepositions: (parent: any) =>
       fetchChildrenCategories(parent.children.prepositions, parent.name),
-    comparisons: async (parent: any) =>
+    comparisons: (parent: any) =>
       fetchChildrenCategories(parent.children.comparisons, parent.name),
-    alphabeticals: async (parent: any) =>
+    alphabeticals: (parent: any) =>
       fetchChildrenCategories(parent.children.alphabeticals, parent.name),
   },
   Questions: {
