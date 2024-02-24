@@ -5,7 +5,7 @@ import {
   prepositions,
   comparisons,
 } from "../services";
-import { SharedContext } from "../context";
+import { SharedContext } from "./context";
 
 const getSuggestions = (query: string, context: SharedContext) => {
   if (!query) throw new GraphQLError("Missing query parameter");
@@ -37,10 +37,10 @@ const getSuggestions = (query: string, context: SharedContext) => {
 const fetchChildrenCategories = async (
   children: string[],
   keyword: string,
-  category = ""
+  hasPrefix = false
 ) => {
   const suggestions = await Promise.all(
-    category === "questions"
+    hasPrefix
       ? children.map((child) => fetchSuggestions(keyword, child + " "))
       : children.map((child) => fetchSuggestions(keyword + " " + child))
   );
@@ -65,11 +65,7 @@ const resolvers = {
   },
   Children: {
     questions: (parent: any) =>
-      fetchChildrenCategories(
-        parent.children.questions,
-        parent.name,
-        "questions"
-      ),
+      fetchChildrenCategories(parent.children.questions, parent.name, true),
     prepositions: (parent: any) =>
       fetchChildrenCategories(parent.children.prepositions, parent.name),
     comparisons: (parent: any) =>

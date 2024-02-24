@@ -5,8 +5,8 @@ import cors from "cors";
 import typeDefs from "./graphql/schema";
 import resolvers from "./graphql/resolvers";
 import routes from "./routes/routes";
-import { SharedContext } from "./context";
-import { logger } from "./logger";
+import { SharedContext } from "./graphql/context";
+import { logger } from "./utils/logger";
 
 const startApolloServer = async () => {
   const app = express();
