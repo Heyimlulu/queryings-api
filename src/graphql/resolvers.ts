@@ -5,8 +5,51 @@ import {
   prepositions,
   comparisons,
 } from "../services";
-import { Queries } from "../types/Queries";
 import { SharedContext } from "..";
+
+const getSuggestions = async (query: string, context: SharedContext) => {
+  if (!query) throw new GraphQLError("Missing query parameter");
+  if (query.length < 3)
+    throw new GraphQLError(
+      "query parameter should be at least 3 characters long"
+    );
+  if (query.length > 15)
+    throw new GraphQLError(
+      "query parameter should be at most 15 characters long"
+    );
+
+  if (!context.client)
+    throw new GraphQLError("Missing x-client-referer header");
+  if (context.client !== "queryings-app")
+    throw new GraphQLError("Unauthorized client");
+
+  return {
+    name: query,
+    children: {
+      questions,
+      prepositions,
+      comparisons,
+      alphabeticals: "abcdefghijklmnopqrstuvwxyz*".split(""),
+    },
+  };
+};
+
+const fetchChildrenCategories = async (
+  children: string[],
+  keyword: string,
+  category = ""
+) => {
+  const suggestions = await Promise.all(
+    category === "questions"
+      ? children.map((child) => fetchSuggestions(keyword, child + " "))
+      : children.map((child) => fetchSuggestions(keyword + " " + child))
+  );
+  const suggestionsResult: Record<string, string[]> = {};
+  children.forEach((child, idx) => {
+    suggestionsResult[child] = suggestions[idx];
+  });
+  return suggestionsResult;
+};
 
 const resolvers = {
   Query: {
@@ -14,67 +57,25 @@ const resolvers = {
       _: any,
       { query }: { query: string },
       context: SharedContext
-    ) => {
-      if (!query) throw new GraphQLError("Missing query parameter");
-      if (query.length < 3)
-        throw new GraphQLError(
-          "query parameter should be at least 3 characters long"
-        );
-      if (query.length > 15)
-        throw new GraphQLError(
-          "query parameter should be at most 15 characters long"
-        );
-
-      if (!context.client)
-        throw new GraphQLError("Missing x-client-referer header");
-      if (context.client !== "queryings-app")
-        throw new GraphQLError("Unauthorized client");
-
-      const results: Queries = {
-        name: query,
-        children: {
-          questions: {},
-          prepositions: {},
-          comparisons: {},
-          alphabeticals: {},
-        },
-      };
-
-      await Promise.all([
-        ...questions.map((question) =>
-          fetchSuggestions(query, question + " ").then((data) => {
-            results.children.questions[question] = data;
-          })
-        ),
-        ...prepositions.map((preposition) =>
-          fetchSuggestions(query + " " + preposition).then((data) => {
-            results.children.prepositions[preposition] = data;
-          })
-        ),
-        ...comparisons.map((comparison) =>
-          fetchSuggestions(query + " " + comparison).then((data) => {
-            results.children.comparisons[comparison] = data;
-          })
-        ),
-        ..."abcdefghijklmnopqrstuvwxyz*".split("").map((letter) =>
-          fetchSuggestions(query + " " + letter).then((data) => {
-            results.children.alphabeticals[letter] = data;
-          })
-        ),
-      ]);
-
-      return results;
-    },
+    ) => getSuggestions(query, context),
   },
   Suggestions: {
     name: (parent: any) => parent.name,
-    children: (parent: any) => parent.children,
+    children: (parent: any) => parent,
   },
   Children: {
-    questions: (parent: any) => parent.questions,
-    prepositions: (parent: any) => parent.prepositions,
-    comparisons: (parent: any) => parent.comparisons,
-    alphabeticals: (parent: any) => parent.alphabeticals,
+    questions: async (parent: any) =>
+      fetchChildrenCategories(
+        parent.children.questions,
+        parent.name,
+        "questions"
+      ),
+    prepositions: async (parent: any) =>
+      fetchChildrenCategories(parent.children.prepositions, parent.name),
+    comparisons: async (parent: any) =>
+      fetchChildrenCategories(parent.children.comparisons, parent.name),
+    alphabeticals: async (parent: any) =>
+      fetchChildrenCategories(parent.children.alphabeticals, parent.name),
   },
   Questions: {
     howOften: (parent: any) => parent["how often"],
