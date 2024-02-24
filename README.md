@@ -3,16 +3,16 @@
 ## REST
 
 - Base URL: http://localhost:8080
-- Endpoint: `/api/query`
+- Endpoint: `/api/get-queries`
 - Query param: `q=<keyword>`
 
 ```
-http://localhost:8080/api/query?q=cat
+http://localhost:8080/api/get-queries?q=cat
 ```
 
 ## GraphQL
 
-*Same as above but allow specific fields picking*
+_Same as above but allow specific fields picking_
 
 ### Query
 
