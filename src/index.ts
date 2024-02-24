@@ -6,6 +6,7 @@ import typeDefs from "./graphql/schema";
 import resolvers from "./graphql/resolvers";
 import routes from "./routes/routes";
 import { SharedContext } from "./context";
+import { logger } from "./logger";
 
 const startApolloServer = async () => {
   const app = express();
@@ -43,8 +44,8 @@ const startApolloServer = async () => {
   );
 
   app.listen(port, () => {
-    console.log(`⭐ Server listening at http://localhost:${port}`);
-    console.log(`🚀 GraphQL server ready at http://localhost:${port}/graphql`);
+    logger.info(`⭐ Server listening at http://localhost:${port}`);
+    logger.info(`🚀 GraphQL server ready at http://localhost:${port}/graphql`);
   });
 };
 

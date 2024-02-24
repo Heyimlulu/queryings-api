@@ -28,7 +28,7 @@ export const fetchSuggestions = async (
     );
     return response.data[1];
   } catch (error) {
-    logger("fetchSuggestions").error("Error fetching suggestions", error);
+    logger.error("Error fetching suggestions", error);
     return [];
   }
 };
