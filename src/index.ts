@@ -25,7 +25,10 @@ const startApolloServer = async () => {
     cors<cors.CorsRequest>(),
     express.json(),
     expressMiddleware(server, {
-      context: async ({ req }) => ({ client: req.headers["x-client-referer"] }),
+      context: async ({ req }) => ({
+        client: req.headers["x-client-referer"],
+        token: req.headers["authorization"],
+      }),
     })
   );
 
