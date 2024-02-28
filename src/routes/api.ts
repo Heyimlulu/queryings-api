@@ -6,31 +6,27 @@ import {
   comparisons,
 } from "../services";
 import { Queries } from "../types/Queries";
+import { verifyPersonalAccessToken } from "../utils/security";
 
-const router = Router();
+const apiRoute = Router();
 
-router.get("/ping", (req: Request, res: Response) =>
+apiRoute.get("/ping", (req: Request, res: Response) =>
   res.json({ message: "Server is up and running!" })
 );
 
-router.get("/get-queries", async (req: Request, res: Response) => {
+apiRoute.get("/get-queries", async (req: Request, res: Response) => {
+  const headers = req.headers["authorization"] ?? "";
   const query = req.query.q;
+
+  if (!verifyPersonalAccessToken(headers))
+    return res.status(401).json({ message: "Unauthorized" });
 
   if (!query)
     return res.status(400).json({ message: "Missing query parameter" });
-  if (query.toString().length < 3)
-    return res.status(400).json({
-      message: "query parameter should be at least 3 characters long",
-    });
-  if (query.toString().length > 15)
-    return res.status(400).json({
-      message: "query parameter should be at most 15 characters long",
-    });
-
-  if (!req.headers["x-client-referer"])
-    return res.status(400).json({ message: "Missing x-client-referer header" });
-  if (req.headers["x-client-referer"] !== "queryings-app")
-    return res.status(401).json({ message: "Unauthorized client" });
+  if (query.toString().length < 3 || query.toString().length > 15)
+    return res
+      .status(400)
+      .json({ message: "Query parameter must be between 3 and 15 characters" });
 
   const results: Queries = {
     name: query.toString(),
@@ -68,4 +64,4 @@ router.get("/get-queries", async (req: Request, res: Response) => {
   return res.json(results);
 });
 
-export default router;
+export default apiRoute;
