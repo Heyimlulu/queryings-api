@@ -9,19 +9,8 @@ import { SharedContext } from "./context";
 
 const getSuggestions = (query: string, context: SharedContext) => {
   if (!query) throw new GraphQLError("Missing query parameter");
-  if (query.length < 3)
-    throw new GraphQLError(
-      "query parameter should be at least 3 characters long"
-    );
-  if (query.length > 15)
-    throw new GraphQLError(
-      "query parameter should be at most 15 characters long"
-    );
-
-  if (!context.client)
-    throw new GraphQLError("Missing x-client-referer header");
-  if (context.client !== "queryings-app")
-    throw new GraphQLError("Unauthorized client");
+  if (query.length < 3 || query.length > 15)
+    throw new GraphQLError("Query length should be between 3 and 15");
 
   return {
     name: query,
