@@ -6,14 +6,15 @@ import {
   comparisons,
 } from "../services";
 import { Queries } from "../types/Queries";
+import { withAuth } from "../utils/auth";
 
 const apiRoute = Router();
 
-apiRoute.get("/ping", (req: Request, res: Response) =>
+apiRoute.get("/ping", (_, res: Response) =>
   res.json({ message: "Server is up and running!" })
 );
 
-apiRoute.get("/get-queries", async (req: Request, res: Response) => {
+apiRoute.get("/get-queries", withAuth, async (req: Request, res: Response) => {
   const query = req.query.q;
 
   if (!query)
