@@ -6,7 +6,6 @@ import {
   comparisons,
 } from "../services";
 import { Queries } from "../types/Queries";
-import { verifyPersonalAccessToken } from "../utils/security";
 
 const apiRoute = Router();
 
@@ -15,11 +14,7 @@ apiRoute.get("/ping", (req: Request, res: Response) =>
 );
 
 apiRoute.get("/get-queries", async (req: Request, res: Response) => {
-  const headers = req.headers["authorization"] ?? "";
   const query = req.query.q;
-
-  if (!verifyPersonalAccessToken(headers))
-    return res.status(401).json({ message: "Unauthorized" });
 
   if (!query)
     return res.status(400).json({ message: "Missing query parameter" });

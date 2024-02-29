@@ -6,15 +6,11 @@ import {
   comparisons,
 } from "../services";
 import { SharedContext } from "./context";
-import { verifyPersonalAccessToken } from "../utils/security";
 
 const getSuggestions = (query: string, context: SharedContext) => {
   if (!query) throw new GraphQLError("Missing query parameter");
   if (query.length < 3 || query.length > 15)
     throw new GraphQLError("Query length should be between 3 and 15");
-
-  if (!verifyPersonalAccessToken(context.token ?? ""))
-    throw new GraphQLError("Unauthorized");
 
   return {
     name: query,
