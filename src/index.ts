@@ -8,6 +8,7 @@ import apiRoute from "./routes/api";
 import { SharedContext } from "./graphql/context";
 import { logger } from "./utils/logger";
 import { withAuth } from "./utils/auth";
+import { apiPaths } from "./utils/paths";
 
 const startApolloServer = async () => {
   const app = express();
@@ -16,11 +17,19 @@ const startApolloServer = async () => {
 
   await server.start();
 
+  app.all("/*", (req, res, next) => {
+    const path = req.path;
+    const allowedPaths = Object.values(apiPaths);
+    if (!allowedPaths.includes(path)) {
+      return res.status(404).json({ message: "Not Found" });
+    }
+    return next();
+  });
   app.use(cors());
   app.use(express.json());
   app.use("/", apiRoute);
   app.use(
-    "/graphql",
+    apiPaths.graphql,
     withAuth,
     cors<cors.CorsRequest>(),
     express.json(),
