@@ -18,7 +18,7 @@ const startApolloServer = async () => {
 
   app.use(cors());
   app.use(express.json());
-  app.use("/api", apiRoute);
+  app.use("/", apiRoute);
   app.use(
     "/graphql",
     withAuth,
