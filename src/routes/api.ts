@@ -10,6 +10,10 @@ import { withAuth } from "../utils/auth";
 
 const apiRoute = Router();
 
+apiRoute.get("/", (_, res: Response) =>
+  res.status(404).json({ message: "Not Found" })
+);
+
 apiRoute.get("/ping", (_, res: Response) =>
   res.json({ message: "Server is up and running!" })
 );
