@@ -5,7 +5,7 @@
 ## REST
 
 - Endpoint: `/get-queries`
-- Query param: `q=<keyword>`
+- Query param: `q=<string>`
 
 ```
 http://localhost:8080/get-queries?q=cat
@@ -18,7 +18,7 @@ _Same as above but allow specific fields picking_
 ### Query
 
 - Endpoint: `/graphql`
-- Variables: `{ "query": "cat" }`
+- Variables: `{ "query": "string" }`
 
 ```graphql
 query getSuggestions($query: String!) {
