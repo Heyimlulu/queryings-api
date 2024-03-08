@@ -5,12 +5,12 @@ import {
   questions,
   prepositions,
   comparisons,
-  fetchTrendings,
-} from "../services";
-import { Queries } from "../types/Queries";
-import { withAuth } from "../utils/auth";
-import { apiPaths } from "../utils/paths";
-import { TrendingsResult } from "../types/Trending";
+} from "../../services/suggestions";
+import { Queries } from "../../types/Queries";
+import { withAuth } from "../../utils/basicAuth";
+import { apiPaths } from "../../utils/paths";
+import { TrendingsResult } from "../../types/Trending";
+import { fetchTrendings } from "../../services/trendings";
 
 const apiRoute = Router();
 

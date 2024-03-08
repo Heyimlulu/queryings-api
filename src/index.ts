@@ -2,12 +2,12 @@ import express from "express";
 import { ApolloServer } from "@apollo/server";
 import { expressMiddleware } from "@apollo/server/express4";
 import cors from "cors";
-import typeDefs from "./graphql/schema";
-import resolvers from "./graphql/resolvers";
-import apiRoute from "./routes/api";
-import { SharedContext } from "./graphql/context";
+import typeDefs from "./routes/graphql/schema";
+import resolvers from "./routes/graphql/resolvers";
+import apiRoute from "./routes/default/api";
+import { SharedContext } from "./routes/graphql/context";
 import { logger } from "./utils/logger";
-import { withAuth } from "./utils/auth";
+import { withAuth } from "./utils/basicAuth";
 import { apiPaths } from "./utils/paths";
 
 const startApolloServer = async () => {
