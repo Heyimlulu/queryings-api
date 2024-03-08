@@ -4,12 +4,29 @@
 
 ## REST
 
+### Suggestions
+
 - Endpoint: `/get-queries`
 - Query param: `q=<string>`
 
-```
-http://localhost:8080/get-queries?q=cat
-```
+> http://localhost:8080/get-queries?q=cat
+
+### Trendings
+
+- Endpoint: `/get-trending`
+- Query param:
+  - `geolocation=<string>` (Optional) (Default: US)
+  - `date=<string>` (Optional) (Default: Today)
+  - `extended=<boolean>` (Optional)
+
+> http://localhost:8080/get-trending?geolocation=CH&date=2024-01-01&extended=true
+
+- Endpoint: `/get-trendings`
+- Query param:
+  - `geolocation=<string>` (Optional) (Default: US)
+  - `extended=<boolean>` (Optional)
+
+> http://localhost:8080/get-trendings?geolocation=CH&extended=true
 
 ## GraphQL
 
