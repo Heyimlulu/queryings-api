@@ -6,36 +6,23 @@
 
 ### Suggestions
 
-- Endpoint: `/get-queries`
-- Query param: `q=<string>`
-
-> http://localhost:8080/get-queries?q=cat
+```
+/get-queries?q=<string>
+```
 
 ### Trendings
 
-- Endpoint: `/get-trending`
-- Query param:
-  - `geolocation=<string>` (Optional) (Default: US)
-  - `date=<string>` (Optional) (Default: Today)
-  - `extended=<boolean>` (Optional)
+```
+/get-trending?geolocation=<string>&date=<date>&extended=<boolean>
 
-> http://localhost:8080/get-trending?geolocation=CH&date=2024-01-01&extended=true
-
-- Endpoint: `/get-trendings`
-- Query param:
-  - `geolocation=<string>` (Optional) (Default: US)
-  - `extended=<boolean>` (Optional)
-
-> http://localhost:8080/get-trendings?geolocation=CH&extended=true
+/get-trendings?geolocation=<string>&extended=<boolean>
+```
 
 ## GraphQL
 
 _Same as above but allow specific fields picking_
 
 ### Query
-
-- Endpoint: `/graphql`
-- Variables: `{ "query": "string" }`
 
 ```graphql
 query getSuggestions($query: String!) {
