@@ -1,3 +1,3 @@
 export interface SharedContext {
-  client?: string;
+  Client?: string;
 }
