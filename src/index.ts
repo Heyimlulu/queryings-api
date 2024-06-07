@@ -4,11 +4,13 @@ import { expressMiddleware } from "@apollo/server/express4";
 import cors from "cors";
 import typeDefs from "./routes/graphql/schema";
 import resolvers from "./routes/graphql/resolvers";
-import apiRoute from "./routes/default/api";
+import apiRoute from "./routes/controllers";
 import { SharedContext } from "./routes/graphql/context";
 import { logger } from "./utils/logger";
 import { withAuth } from "./utils/basicAuth";
 import { apiPaths } from "./utils/paths";
+import { name, version } from "../package.json";
+import middlewares from "./middlewares";
 
 const startApolloServer = async () => {
   const app = express();
@@ -17,6 +19,7 @@ const startApolloServer = async () => {
 
   await server.start();
 
+  // Only allow the specified paths
   app.all("/*", (req, res, next) => {
     const path = req.path;
     const allowedPaths = Object.values(apiPaths);
@@ -25,9 +28,14 @@ const startApolloServer = async () => {
     }
     return next();
   });
-  app.use(cors());
-  app.use(express.json());
+
+  // Apply middlewares
+  middlewares(app);
+
+  // Express Routes
   app.use("/", apiRoute);
+
+  // GraphQL Routes
   app.use(
     apiPaths.graphql,
     withAuth,
@@ -35,11 +43,12 @@ const startApolloServer = async () => {
     express.json(),
     expressMiddleware(server, {
       context: async ({ req }) => ({
-        client: req.headers["x-client-referer"],
+        Client: `${name}:${version}`,
       }),
     })
   );
 
+  // Start the server
   app.listen(port, () => {
     logger.info(`⭐ Server listening at http://localhost:${port}`);
     logger.info(`🚀 GraphQL server ready at http://localhost:${port}/graphql`);

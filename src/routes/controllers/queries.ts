@@ -1,4 +1,3 @@
-import dayjs from "dayjs";
 import { Router, Request, Response } from "express";
 import {
   fetchSuggestions,
@@ -9,16 +8,17 @@ import {
 import { Queries } from "../../types/Queries";
 import { withAuth } from "../../utils/basicAuth";
 import { apiPaths } from "../../utils/paths";
-import { TrendingsResult } from "../../types/Trending";
-import { fetchTrendings } from "../../services/trendings";
 
-const apiRoute = Router();
+const queryRoute = Router();
 
-apiRoute.get(apiPaths.ping, (_, res: Response) =>
-  res.json({ message: "Server is up and running!" })
-);
-
-apiRoute.get(
+/**
+ * Get suggestions for a specific query
+ * 
+ * @param q The query to fetch suggestions for
+ * 
+ * @returns Suggestions for the specified query
+ */
+queryRoute.get(
   apiPaths.getQueries,
   withAuth,
   async (req: Request, res: Response) => {
@@ -68,47 +68,4 @@ apiRoute.get(
   }
 );
 
-apiRoute.get(apiPaths.getTrendings, async (req: Request, res: Response) => {
-  const { geolocation, extended } = req.query;
-
-  const results: TrendingsResult[] = [];
-
-  await Promise.all(
-    Array.from({ length: 30 }, (_, i) =>
-      fetchTrendings(
-        geolocation as string,
-        dayjs().subtract(i, "day").format("YYYY-MM-DD")
-      ).then((trendings) => {
-        results.push(...trendings);
-      })
-    )
-  );
-
-  if (extended == "true") {
-    return res.json({
-      results: results.flatMap((r) =>
-        r.trendingSearches.map((t) => t.title.query)
-      ),
-    });
-  }
-
-  return res.json({
-    results: results.sort((a, b) => (a.date > b.date ? -1 : 1)),
-  });
-});
-
-apiRoute.get(apiPaths.getTrending, async (req: Request, res: Response) => {
-  const { geolocation, date, extended } = req.query;
-  const results = await fetchTrendings(geolocation as string, date as string);
-
-  if (extended == "true") {
-    return res.json({
-      results: results.flatMap((r) =>
-        r.trendingSearches.map((t) => t.title.query)
-      ),
-    });
-  }
-  return res.json({ results });
-});
-
-export default apiRoute;
+export default queryRoute;
