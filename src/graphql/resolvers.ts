@@ -4,7 +4,7 @@ import {
   questions,
   prepositions,
   comparisons,
-} from "../../services/suggestions";
+} from "../services/suggestions";
 import { SharedContext } from "./context";
 
 const getSuggestions = (query: string, context: SharedContext) => {

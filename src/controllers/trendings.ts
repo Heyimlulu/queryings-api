@@ -1,11 +1,7 @@
 import dayjs from "dayjs";
-import { Router, Request, Response } from "express";
-import { withAuth } from "../../utils/basicAuth";
-import { apiPaths } from "../../utils/paths";
-import { TrendingsResult } from "../../types/Trending";
-import { fetchTrendings } from "../../services/trendings";
-
-const trendRoute = Router();
+import { Request, Response } from "express";
+import { TrendingsResult } from "../types/Trending";
+import { fetchTrendings } from "../services/trendings";
 
 /**
  * Get trendings from Google Trends for the last 30 days
@@ -15,7 +11,7 @@ const trendRoute = Router();
  * 
  * @returns Trendings for the last 30 days
  */
-trendRoute.get(apiPaths.getTrendings, withAuth, async (req: Request, res: Response) => {
+export const getTrendings = async (req: Request, res: Response) => {
   const { geolocation, extended } = req.query;
 
   const results: TrendingsResult[] = [];
@@ -43,7 +39,7 @@ trendRoute.get(apiPaths.getTrendings, withAuth, async (req: Request, res: Respon
       r.trendingSearches.map((t) => t.title.query)
     ),
   });
-});
+};
 
 /**
  * Get trendings from Google Trends for a specific date
@@ -54,7 +50,7 @@ trendRoute.get(apiPaths.getTrendings, withAuth, async (req: Request, res: Respon
  * 
  * @returns Trendings for the specified date
  */
-trendRoute.get(apiPaths.getTrending, withAuth, async (req: Request, res: Response) => {
+export const getTrending = async (req: Request, res: Response) => {
   const { geolocation, date, extended } = req.query;
   const results = await fetchTrendings(geolocation as string, date as string);
 
@@ -69,6 +65,4 @@ trendRoute.get(apiPaths.getTrending, withAuth, async (req: Request, res: Respons
       r.trendingSearches.map((t) => t.title.query)
     ),
   });
-});
-
-export default trendRoute;
+};

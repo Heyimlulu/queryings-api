@@ -1,5 +1,5 @@
 import { Router, Response } from "express";
-import { apiPaths } from "../../utils/paths";
+import { apiPaths } from "../utils/paths";
 
 const pingRoute = Router();
 
