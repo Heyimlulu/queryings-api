@@ -1,5 +1,5 @@
 import axios from "axios";
-import { logger } from "./utils/logger";
+import { validateResponse } from "../utils/validator";
 
 export const questions = [
   "can",
@@ -22,13 +22,9 @@ export const fetchSuggestions = async (
   keyword: string,
   prefix = ""
 ): Promise<string[]> => {
-  try {
-    const response = await axios.get(
+  return axios
+    .get(
       `http://suggestqueries.google.com/complete/search?client=firefox&q=${prefix}${keyword}`
-    );
-    return response.data[1];
-  } catch (error) {
-    logger.error("Error fetching suggestions", error);
-    return [];
-  }
+    )
+    .then((response) => validateResponse(response).data[1] ?? []);
 };

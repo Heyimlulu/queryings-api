@@ -4,11 +4,18 @@
 
 ## REST
 
-- Endpoint: `/get-queries`
-- Query param: `q=<string>`
+### Suggestions
 
 ```
-http://localhost:8080/get-queries?q=cat
+/get-queries?q=<string>
+```
+
+### Trendings
+
+```
+/get-trending?geolocation=<string>&date=<date>&extended=<boolean>
+
+/get-trendings?geolocation=<string>&extended=<boolean>
 ```
 
 ## GraphQL
@@ -16,9 +23,6 @@ http://localhost:8080/get-queries?q=cat
 _Same as above but allow specific fields picking_
 
 ### Query
-
-- Endpoint: `/graphql`
-- Variables: `{ "query": "string" }`
 
 ```graphql
 query getSuggestions($query: String!) {
