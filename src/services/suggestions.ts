@@ -22,9 +22,15 @@ export const fetchSuggestions = async (
   keyword: string,
   prefix = ""
 ): Promise<string[]> => {
-  return axios
-    .get(
-      `http://suggestqueries.google.com/complete/search?client=firefox&q=${prefix}${keyword}`
-    )
-    .then((response) => validateResponse(response).data[1] ?? []);
+  const q = encodeURIComponent(`${prefix}${keyword}`.trim());
+  const url = `http://suggestqueries.google.com/complete/search?client=firefox&q=${q}`;
+
+  try {
+    const response = await axios.get(url);
+    validateResponse(response);
+    return response.data?.[1] ?? [];
+  } catch (error) {
+    // Fail gracefully and return an empty array so the overall result still completes.
+    return [];
+  }
 };

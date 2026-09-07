@@ -1,0 +1,8 @@
+{
+  "watch": ["src"],
+  "ignore": ["node_modules", "dist", ".git", ".codebase-memory"],
+  "ext": "ts,js,json",
+  "execMap": {
+    "ts": "ts-node"
+  }
+}

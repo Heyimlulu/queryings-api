@@ -5,12 +5,16 @@ import {
   prepositions,
   comparisons,
 } from "../services/suggestions";
+import { validateQuery } from "../utils/validator";
 import { SharedContext } from "./context";
 
 const getSuggestions = (query: string, context: SharedContext) => {
-  if (!query) throw new GraphQLError("Missing query parameter");
-  if (query.length < 3 || query.length > 15)
-    throw new GraphQLError("Query length should be between 3 and 15");
+  try {
+    validateQuery(query);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Invalid query";
+    throw new GraphQLError(message);
+  }
 
   return {
     name: query,

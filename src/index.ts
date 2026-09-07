@@ -1,6 +1,6 @@
 import express from "express";
 import { ApolloServer } from "@apollo/server";
-import { expressMiddleware } from "@apollo/server/express4";
+import { expressMiddleware } from "@as-integrations/express4";
 
 import defaultRoute from "./routes";
 import v1Route from "./routes/v1";
@@ -42,11 +42,11 @@ const startApolloServer = async () => {
   app.use("/v1", v1Route);
 
   // GraphQL Routes
+  // express.json() and CORS are already applied globally in middlewares().
   app.use(
     apiPaths.graphql,
-    express.json(),
     expressMiddleware(server, {
-      context: async ({ req }) => ({
+      context: async () => ({
         Client: `${name}:${version}`,
       }),
     })
