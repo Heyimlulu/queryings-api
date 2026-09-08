@@ -15,6 +15,7 @@ import { apiPaths } from "./utils/paths";
 import middlewares from "./middlewares";
 
 import { name, version } from "../package.json";
+import { withAuth } from "./utils/basicAuth";
 
 const startApolloServer = async () => {
   const app = express();
@@ -43,11 +44,14 @@ const startApolloServer = async () => {
 
   // GraphQL Routes
   // express.json() and CORS are already applied globally in middlewares().
+  app.use(apiPaths.graphql, withAuth);
   app.use(
     apiPaths.graphql,
     expressMiddleware(server, {
-      context: async () => ({
+      context: async ({ req, res }) => ({
         Client: `${name}:${version}`,
+        ip: req.ip,
+        user: res.locals.user,
       }),
     })
   );

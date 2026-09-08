@@ -6,6 +6,7 @@ import {
   comparisons,
 } from "../services/suggestions";
 import { validateQuery } from "../utils/validator";
+import { logger } from "../utils/logger";
 import { Queries } from "../types/Queries";
 
 /**
@@ -18,6 +19,7 @@ import { Queries } from "../types/Queries";
 export const getQueries = async (req: Request, res: Response) => {
   try {
     const query = validateQuery(req.query.q);
+    logger.info(`[queries] ip=${req.ip} user=${res.locals.user?.name ?? "anonymous"} q="${query}"`);
 
     const results: Queries = {
       name: query,
@@ -54,7 +56,8 @@ export const getQueries = async (req: Request, res: Response) => {
 
     return res.json(results);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Invalid request";
-    return res.status(400).json({ message });
+    const detail = error instanceof Error ? error.message : "Unknown error";
+    logger.warn(`[queries] validation error from ${req.ip}: ${detail}`);
+    return res.status(400).json({ message: "Invalid request" });
   }
 };

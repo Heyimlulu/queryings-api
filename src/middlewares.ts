@@ -1,9 +1,25 @@
-import express from "express";
+import express, { Request, Response, NextFunction } from "express";
 import { rateLimit, ipKeyGenerator } from "express-rate-limit";
 import cors from "cors";
 import { name, version } from "../package.json";
+import { logger } from "./utils/logger";
 
 const ALLOWED_METHODS = ["GET", "POST", "OPTIONS"];
+
+const DEFAULT_ORIGINS = [
+  "http://localhost:4200",
+  "http://localhost:4000",
+];
+
+const getAllowedOrigins = (): (string | RegExp)[] => {
+  const env = process.env.ALLOWED_ORIGINS;
+  if (!env) return DEFAULT_ORIGINS;
+  return env
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean)
+    .map((origin) => (origin.includes("*") ? new RegExp(origin) : origin));
+};
 
 const methodFilter = (
   req: express.Request,
@@ -25,10 +41,36 @@ const addClientHeader = (
   next();
 };
 
+const requestLogger = (
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) => {
+  const start = Date.now();
+  res.on("finish", () => {
+    logger.info(
+      `[http] ${req.ip ?? "unknown"} ${req.method} ${req.path} ${
+        res.statusCode
+      } ${Date.now() - start}ms`
+    );
+  });
+  next();
+};
+
+const genericErrorHandler = (
+  err: Error,
+  _req: Request,
+  res: Response,
+  _next: NextFunction
+) => {
+  logger.error(`[http] unhandled error: ${err.message}`);
+  res.status(500).json({ message: "Internal server error" });
+};
+
 const middlewares = (app: express.Application) => {
   app.use(
     cors({
-      origin: "*",
+      origin: getAllowedOrigins(),
       methods: ["GET", "POST"],
       allowedHeaders: [
         "Origin",
@@ -37,32 +79,35 @@ const middlewares = (app: express.Application) => {
         "Accept",
         "Authorization",
       ],
+      credentials: false,
     })
   );
   app.use(express.json());
   app.use(methodFilter);
   app.use(addClientHeader);
+  app.use(requestLogger);
 
   const limiter = rateLimit({
     windowMs: 60 * 1000, // 1 minute
-    max: 120,
+    max: 100,
     // Use a custom keyGenerator that properly handles IPv6 addresses
     keyGenerator: (req) => {
       // First try to use Cloudflare IP if available
       const cfIp = req.headers["cf-connecting-ip"];
-      if (cfIp) {
-        const ip = Array.isArray(cfIp) ? cfIp[0] : cfIp;
-        return ip.toString();
+      const cfIpString = Array.isArray(cfIp) ? cfIp[0] : cfIp;
+      if (cfIpString) {
+        return ipKeyGenerator(cfIpString);
       }
 
-      return ipKeyGenerator(req.ip);
+      return ipKeyGenerator(req.ip ?? "unknown");
     },
     message: {
-      error: "Too many requests, please try again later. (120 reqs/min/IP)",
+      error: "Too many requests, please try again later. (100 reqs/min/IP)",
     },
   });
 
   app.use(limiter);
+  app.use(genericErrorHandler);
 };
 
 export default middlewares;

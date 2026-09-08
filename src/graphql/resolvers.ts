@@ -6,25 +6,30 @@ import {
   comparisons,
 } from "../services/suggestions";
 import { validateQuery } from "../utils/validator";
+import { logger } from "../utils/logger";
 import { SharedContext } from "./context";
 
 const getSuggestions = (query: string, context: SharedContext) => {
   try {
-    validateQuery(query);
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "Invalid query";
-    throw new GraphQLError(message);
-  }
+    const sanitized = validateQuery(query);
+    logger.info(
+      `[graphql] ip=${context.ip ?? "unknown"} user=${context.user?.name ?? "anonymous"} q="${sanitized}"`
+    );
 
-  return {
-    name: query,
-    children: {
-      questions,
-      prepositions,
-      comparisons,
-      alphabeticals: "abcdefghijklmnopqrstuvwxyz*".split(""),
-    },
-  };
+    return {
+      name: sanitized,
+      children: {
+        questions,
+        prepositions,
+        comparisons,
+        alphabeticals: "abcdefghijklmnopqrstuvwxyz*".split(""),
+      },
+    };
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : "Invalid query";
+    logger.warn(`[graphql] validation error: ${detail}`);
+    throw new GraphQLError("Invalid request");
+  }
 };
 
 const fetchChildrenCategories = async (
