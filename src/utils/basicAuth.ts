@@ -9,7 +9,7 @@ const ADMIN_USERNAME = process.env.ADMIN_USERNAME?.trim();
 const ADMIN_PASSWORD_HASH = process.env.ADMIN_PASSWORD_HASH?.trim();
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD?.trim();
 
-const MAX_ATTEMPTS = 5;
+const MAX_ATTEMPTS = 10;
 const LOCKOUT_MS = 15 * 60 * 1000; // 15 minutes
 
 interface LockoutRecord {
@@ -73,6 +73,17 @@ const recordSuccess = (key: string) => {
   attempts.delete(key);
 };
 
+const getClientIp = (req: Request): string => {
+  // Cloudflare passes the real client IP in a dedicated header.
+  const cfIp = req.headers["cf-connecting-ip"];
+  const cfIpString = Array.isArray(cfIp) ? cfIp[0] : cfIp;
+  if (cfIpString) return cfIpString;
+
+  // trust proxy is enabled in index.ts, so req.ip reflects the real client
+  // when the request goes through the queryings-app SSR proxy.
+  return req.ip ?? "unknown";
+};
+
 const parseBasicAuth = (
   header: string
 ): { username: string; password: string } | null => {
@@ -119,7 +130,7 @@ export const withAuth = (
     return res.status(401).json({ message: "Unauthorized" });
   }
 
-  const key = `${req.ip ?? "unknown"}:${credentials.username}`;
+  const key = getClientIp(req);
 
   if (isLocked(key)) {
     return res

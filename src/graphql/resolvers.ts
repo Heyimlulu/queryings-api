@@ -5,19 +5,23 @@ import {
   prepositions,
   comparisons,
 } from "../services/suggestions";
-import { validateQuery } from "../utils/validator";
+import { validateGeolocation, validateQuery } from "../utils/validator";
 import { logger } from "../utils/logger";
 import { SharedContext } from "./context";
 
-const getSuggestions = (query: string, context: SharedContext) => {
+const getSuggestions = (query: string, gl: string, context: SharedContext) => {
   try {
     const sanitized = validateQuery(query);
+    const country = validateGeolocation(gl);
     logger.info(
-      `[graphql] ip=${context.ip ?? "unknown"} user=${context.user?.name ?? "anonymous"} q="${sanitized}"`
+      `[graphql] ip=${context.ip ?? "unknown"} user=${
+        context.user?.name ?? "anonymous"
+      } q="${sanitized}" gl=${country}`
     );
 
     return {
       name: sanitized,
+      gl: country,
       children: {
         questions,
         prepositions,
@@ -35,12 +39,13 @@ const getSuggestions = (query: string, context: SharedContext) => {
 const fetchChildrenCategories = async (
   children: string[],
   keyword: string,
+  gl: string,
   hasPrefix = false
 ) => {
   const suggestions = await Promise.all(
     hasPrefix
-      ? children.map((child) => fetchSuggestions(keyword, child + " "))
-      : children.map((child) => fetchSuggestions(keyword + " " + child))
+      ? children.map((child) => fetchSuggestions(keyword, child + " ", gl))
+      : children.map((child) => fetchSuggestions(keyword + " " + child, "", gl))
   );
   const suggestionsResult: Record<string, string[]> = {};
   children.forEach((child, idx) => {
@@ -53,9 +58,9 @@ const resolvers = {
   Query: {
     suggestions: (
       _: any,
-      { query }: { query: string },
+      { query, gl }: { query: string; gl?: string },
       context: SharedContext
-    ) => getSuggestions(query, context),
+    ) => getSuggestions(query, gl ?? "", context),
   },
   Suggestions: {
     name: (parent: any) => parent.name,
@@ -63,13 +68,30 @@ const resolvers = {
   },
   Children: {
     questions: (parent: any) =>
-      fetchChildrenCategories(parent.children.questions, parent.name, true),
+      fetchChildrenCategories(
+        parent.children.questions,
+        parent.name,
+        parent.gl,
+        true
+      ),
     prepositions: (parent: any) =>
-      fetchChildrenCategories(parent.children.prepositions, parent.name),
+      fetchChildrenCategories(
+        parent.children.prepositions,
+        parent.name,
+        parent.gl
+      ),
     comparisons: (parent: any) =>
-      fetchChildrenCategories(parent.children.comparisons, parent.name),
+      fetchChildrenCategories(
+        parent.children.comparisons,
+        parent.name,
+        parent.gl
+      ),
     alphabeticals: (parent: any) =>
-      fetchChildrenCategories(parent.children.alphabeticals, parent.name),
+      fetchChildrenCategories(
+        parent.children.alphabeticals,
+        parent.name,
+        parent.gl
+      ),
   },
   Questions: {
     howOften: (parent: any) => parent["how often"],

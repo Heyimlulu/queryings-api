@@ -1,6 +1,6 @@
 const typeDefs = `
   type Query {
-    suggestions(query: String!): Suggestions!
+    suggestions(query: String!, gl: String): Suggestions!
   }
 
   type Suggestions {

@@ -22,6 +22,10 @@ const startApolloServer = async () => {
   const server = new ApolloServer<SharedContext>({ typeDefs, resolvers });
   const port = process.env.PORT || 8080;
 
+  // Trust private/loopback proxies (e.g. the queryings-app SSR server) so
+  // req.ip reflects the real client IP for rate-limiting and lockouts.
+  app.set("trust proxy", ["loopback", "linklocal", "uniquelocal"]);
+
   await server.start();
 
   // Apply middlewares

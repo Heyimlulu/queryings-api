@@ -89,10 +89,12 @@ const middlewares = (app: express.Application) => {
 
   const limiter = rateLimit({
     windowMs: 60 * 1000, // 1 minute
-    max: 100,
-    // Use a custom keyGenerator that properly handles IPv6 addresses
+    max: 30,
+    // Use a custom keyGenerator that properly handles IPv6 addresses.
+    // trust proxy is enabled in index.ts, so req.ip is the real client IP
+    // when the request comes through the SSR proxy or another trusted hop.
     keyGenerator: (req) => {
-      // First try to use Cloudflare IP if available
+      // Prefer Cloudflare's header if present, otherwise the client IP.
       const cfIp = req.headers["cf-connecting-ip"];
       const cfIpString = Array.isArray(cfIp) ? cfIp[0] : cfIp;
       if (cfIpString) {
@@ -102,7 +104,7 @@ const middlewares = (app: express.Application) => {
       return ipKeyGenerator(req.ip ?? "unknown");
     },
     message: {
-      error: "Too many requests, please try again later. (100 reqs/min/IP)",
+      error: "Too many requests, please try again later. (30 reqs/min/IP)",
     },
   });
 
